@@ -71,8 +71,6 @@ class Juego_Memoria:
         
     def crear_fichas(self, cantidad_pares, imagenes_paths):
         self.fichas_maestras = []
-        if len(imagenes_paths) < cantidad_pares:
-            raise ValueError("No hay suficientes rutas de imágenes para los pares requeridos")
             
         for id in range(cantidad_pares):
             ficha1 = Ficha(imagen_path=imagenes_paths[id], id=id)
@@ -104,6 +102,58 @@ class InterfazJuego:
         self.botones = []
         self.imagenes_referencias = []  
         self.configurar_interfaz()
+    
+    def verificar_victoria(self):
+        jugador_actual = self.juego.jugadores[self.juego.turno_actual]
+        total_pares = len(self.juego.fichas_maestras) // 2
+        
+        if jugador_actual.puntos == total_pares:
+            self.mostrar_animacion_ganador(jugador_actual.nombre)
+            return True
+        return False
+    
+    def mostrar_animacion_ganador(self, nombre_ganador):
+        ventana_ganador = Toplevel(self.root)
+        ventana_ganador.title("¡Felicidades!")
+        ventana_ganador.geometry("600x400")
+        ventana_ganador.configure(bg="black")
+        
+        mensaje = Label(ventana_ganador, text=f"¡{nombre_ganador} ha ganado!", font=("Arial", 24, "bold"),bg="black")
+        mensaje.place(relx=0.5, rely=0.4, anchor=CENTER)
+        
+        colores = ["red", "yellow", "green", "blue", "purple", "orange", "white"]
+        
+        def animar_mensaje(contador=0):
+            color = colores[contador % len(colores)]
+            mensaje.config(fg=color)
+            ventana_ganador.after(200, animar_mensaje, contador + 1)
+        
+        confeti = []
+        for _ in range(100):
+            x = random.randint(0, 600)
+            y = random.randint(-50, 0)
+            size = random.randint(5, 15)
+            color = random.choice(colores)
+            
+            c = Canvas(ventana_ganador, width=size, height=size, bg=color, highlightthickness=0)
+            c.place(x=x, y=y)
+            confeti.append((c, x, y, size))
+
+        def animar_confeti():
+            for i, (c, x, y, size) in enumerate(confeti):
+                y += random.randint(1, 5)
+                if y > 400:
+                    y = random.randint(-50, 0)
+                    x = random.randint(0, 600)
+                c.place(x=x, y=y)
+                confeti[i] = (c, x, y, size)
+            ventana_ganador.after(50, animar_confeti)
+        
+        animar_mensaje()
+        animar_confeti()
+        
+        btn_cerrar = Button(ventana_ganador, text="Cerrar", command=ventana_ganador.destroy,font=("Arial", 14),bg="#34495e", fg="white")
+        btn_cerrar.place(relx=0.5, rely=0.8, anchor=CENTER)
         
     def configurar_interfaz(self):
         self.root.configure(bg="#2c3e50")
@@ -151,13 +201,7 @@ class InterfazJuego:
                 else:
                     btn.config(image=ficha.imagen_oculta_tk)
                 
-                btn.config(
-                    command=lambda x=i, y=j: self.clic_ficha(x, y),
-                    width=80, 
-                    height=100,
-                    bg="#ffffff",
-                    relief=FLAT
-                )
+                btn.config(command=lambda x=i, y=j: self.clic_ficha(x, y),width=80, height=100,bg="#ffffff",relief=FLAT)
                 btn.grid(row=i, column=j, padx=5, pady=5)
                 fila_botones.append(btn)
             self.botones.append(fila_botones)
@@ -183,6 +227,9 @@ class InterfazJuego:
                     f.emparejada = True
                 
                 self.lbl_puntos.config(text=f"Puntos: {jugador_actual.puntos}")
+                
+                if self.verificar_victoria():
+                    return
                 
                 self.juego.fichas_seleccionadas = []
                 self.juego.posiciones_seleccionadas = []
