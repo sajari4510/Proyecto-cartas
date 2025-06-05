@@ -60,11 +60,13 @@ class Jugador:
 class Juego_Memoria:
     def __init__(self):
         self.jugadores = []
-        self.tiempo_turno = 10000000
+        self.tiempo_turno = 10  
         self.turno_actual = 0
         self.fichas_maestras = []  
         self.fichas_seleccionadas = []  
         self.posiciones_seleccionadas = []  
+        self.tiempo_restante = 10  
+        self.temporizador_id = None   
         
     def agregar_jugador(self, nombre):
         self.jugadores.append(Jugador(nombre))
@@ -88,9 +90,10 @@ class Juego_Memoria:
         self.turno_actual = (self.turno_actual + 1) % len(self.jugadores)
         self.fichas_seleccionadas = []
         self.posiciones_seleccionadas = []
+        self.tiempo_restante = self.tiempo_turno 
         
     def verificar_emparejamiento(self):
-        if len(self.fichas_seleccionadas) == 2:
+        if len(self.fichas_seleccionadas) == 2:  
             return self.fichas_seleccionadas[0].id == self.fichas_seleccionadas[1].id
         return False
 
@@ -118,7 +121,7 @@ class InterfazJuego:
         ventana_ganador.geometry("600x400")
         ventana_ganador.configure(bg="black")
         
-        mensaje = Label(ventana_ganador, text=f"¡{nombre_ganador} ha ganado!", font=("Arial", 24, "bold"),bg="black")
+        mensaje = Label(ventana_ganador, text=f"¡{nombre_ganador} ha ganado!", font=("Arial", 24, "bold"), bg="black")
         mensaje.place(relx=0.5, rely=0.4, anchor=CENTER)
         
         colores = ["red", "yellow", "green", "blue", "purple", "orange", "white"]
@@ -152,7 +155,7 @@ class InterfazJuego:
         animar_mensaje()
         animar_confeti()
         
-        btn_cerrar = Button(ventana_ganador, text="Cerrar", command=ventana_ganador.destroy,font=("Arial", 14),bg="#34495e", fg="white")
+        btn_cerrar = Button(ventana_ganador, text="Cerrar", command=ventana_ganador.destroy, font=("Arial", 14), bg="#34495e", fg="white")
         btn_cerrar.place(relx=0.5, rely=0.8, anchor=CENTER)
         
     def configurar_interfaz(self):
@@ -167,6 +170,9 @@ class InterfazJuego:
         self.lbl_jugador = Label(self.info_frame, text="", font=("Arial", 14), bg="#34495e", fg="white")
         self.lbl_jugador.pack(side=LEFT)
         
+        self.lbl_tiempo = Label(self.info_frame, text="Tiempo: 10", font=("Arial", 14), bg="#34495e", fg="white")
+        self.lbl_tiempo.pack(side=LEFT, padx=20)
+        
         self.lbl_puntos = Label(self.info_frame, text="Puntos: 0", font=("Arial", 14), bg="#34495e", fg="white")
         self.lbl_puntos.pack(side=RIGHT)
                 
@@ -175,7 +181,16 @@ class InterfazJuego:
         self.botones = []
         self.imagenes_referencias = []  
         
-        self.lbl_jugador.config(text=f"Turno: {jugador.nombre}")
+        # Actualizar la etiqueta del jugador y tiempo
+        self.actualizar_tiempo()
+        
+        # Si hay un temporizador activo, cancelarlo
+        if self.juego.temporizador_id:
+            self.root.after_cancel(self.juego.temporizador_id)
+        
+        # Iniciar nuevo temporizador
+        self.iniciar_temporizador()
+        
         self.lbl_puntos.config(text=f"Puntos: {jugador.puntos}")
         
         for widget in self.main_frame.winfo_children():
@@ -201,11 +216,41 @@ class InterfazJuego:
                 else:
                     btn.config(image=ficha.imagen_oculta_tk)
                 
-                btn.config(command=lambda x=i, y=j: self.clic_ficha(x, y),width=80, height=100,bg="#ffffff",relief=FLAT)
+                btn.config(command=lambda x=i, y=j: self.clic_ficha(x, y), width=80, height=100, bg="#ffffff", relief=FLAT)
                 btn.grid(row=i, column=j, padx=5, pady=5)
                 fila_botones.append(btn)
             self.botones.append(fila_botones)
-
+    
+    def actualizar_tiempo(self):
+        jugador_actual = self.juego.jugadores[self.juego.turno_actual]
+        self.lbl_jugador.config(text=f"{jugador_actual.nombre}")
+        self.lbl_tiempo.config(text=f"Tiempo: {self.juego.tiempo_restante}")
+    
+    def iniciar_temporizador(self):
+        self.actualizar_tiempo()
+        
+        if self.juego.tiempo_restante <= 0:
+            self.tiempo_agotado()
+            return
+        
+        self.juego.tiempo_restante -= 1
+        self.juego.temporizador_id = self.root.after(1000, self.iniciar_temporizador)
+    
+    def tiempo_agotado(self):
+        # Ocultar las fichas seleccionadas si las hay
+        if len(self.juego.fichas_seleccionadas) > 0:
+            for fila, col in self.juego.posiciones_seleccionadas:
+                ficha = self.juego.jugadores[self.juego.turno_actual].tablero.matriz[fila][col]
+                if not ficha.emparejada:
+                    ficha.visible = False
+                    self.botones[fila][col].config(image=ficha.imagen_oculta_tk)
+        
+        # Cambiar de turno
+        self.juego.fichas_seleccionadas = []
+        self.juego.posiciones_seleccionadas = []
+        self.juego.cambiar_turno()
+        self.mostrar_tablero(self.juego.turno_actual)
+    
     def clic_ficha(self, fila, columna):
         jugador_actual = self.juego.jugadores[self.juego.turno_actual]
         ficha = jugador_actual.tablero.matriz[fila][columna]
@@ -222,6 +267,10 @@ class InterfazJuego:
             jugador_actual.incrementar_intentos()
             
             if self.juego.verificar_emparejamiento():
+                # Emparejamiento correcto: sumar 7 segundos
+                self.juego.tiempo_restante += 7
+                self.actualizar_tiempo()
+                
                 jugador_actual.incrementar_puntos()
                 for f in self.juego.fichas_seleccionadas:
                     f.emparejada = True
