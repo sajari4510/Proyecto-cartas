@@ -5,7 +5,7 @@ import csv
 from datetime import datetime
 import PIL.Image
 from PIL import ImageTk
-from tkinter import Tk, Label, Button, Entry, Toplevel, StringVar, END, LEFT, RIGHT, X, Frame, CENTER, FLAT, DISABLED, NORMAL, BooleanVar
+from tkinter import Tk, Label, Button, Entry, Toplevel, StringVar, END, LEFT, RIGHT, X, Frame, CENTER, FLAT, DISABLED, NORMAL, BooleanVar, Checkbutton
 import tkinter.ttk as ttk
 import requests
 from datetime import datetime
@@ -23,7 +23,6 @@ PUNTUACIONES_FILE = "puntuaciones_memoria.csv"
 inicio_sesion_exitoso = False
 usuario_logueado = None
 root = None
-
 musica_general = True
 sonido_botones = True
 efectos_de_sonido=True
@@ -32,6 +31,13 @@ efectos_de_sonido=True
 ==========================================================================================
 Registro facial
 ==========================================================================================
+"""
+"""
+DetectorRostros
+
+cascada_rostros
+
+detectar_rostros()
 """
 class DetectorRostros:
     def __init__(self):
@@ -45,7 +51,12 @@ class DetectorRostros:
         rostros = self.cascada_rostros.detectMultiScale(gris, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
         resultados = [{'caja': [x, y, w, h]} for (x, y, w, h) in rostros]
         return resultados, imagen
+"""
+ReconocimientoFacial
 
+guardar_rostro(ruta_imagen, resultados, nombre_archivo)
+comparar_rostros(ruta_registro, ruta_login)
+"""
 class ReconocimientoFacial:
     @staticmethod
     def guardar_rostro(ruta_imagen, resultados, nombre_archivo):
@@ -79,7 +90,11 @@ class ReconocimientoFacial:
         if len(coincidencias) == 0:
             return 0
         return len(similares) / len(coincidencias)
+"""
+GestorCamara
 
+capturar_imagen(titulo_ventana, nombre_temp)
+"""
 class GestorCamara:
     @staticmethod
     def capturar_imagen(titulo_ventana, nombre_temp):
@@ -101,25 +116,43 @@ class GestorCamara:
             return None, "Captura cancelada"
         cv2.imwrite(nombre_temp, capturado)
         return nombre_temp, None
+"""
+RegistroFacial
 
+root
+
+configurar_ui()
+registrar_rostro()
+mostrar_mensaje(self, texto, color_texto)
+"""
 class RegistroFacial:
     def __init__(self, root):
         self.root = root
         root.title("Registro Facial")
         root.geometry(tamaño_pantallas)
         root.configure(bg=color_fondo)
+        root.attributes('-fullscreen', True)
         self.nombre_usuario = StringVar()
         self.configurar_ui()
 
     def configurar_ui(self):
-        Label(self.root, text="Registro Facial", font=("Arial", 14), bg= color_fondo).pack(pady=10)
-        Label(self.root, text="Ingrese su nombre de usuario:", bg= color_fondo).pack()
-        self.entrada_usuario = Entry(self.root, textvariable=self.nombre_usuario)
+        def inicio():
+            self.root.destroy()
+            con_click("juego")
+            app = AppAutenticacion()
+            app.ejecutar()
+        
+        frame = Frame(self.root, bg=color_fondo)
+        frame.place(relx=0.5, rely=0.5, anchor="center")
+        
+        Label(frame, text="Registro Facial", font=("Arial", 14), bg=color_fondo).pack(pady=10)
+        Label(frame, text="Ingrese su nombre de usuario:", bg=color_fondo).pack()
+        self.entrada_usuario = Entry(frame, textvariable=self.nombre_usuario)
         self.entrada_usuario.pack(pady=5)
-        Button(self.root, text="Capturar Rostro", command=con_click(self.registrar_rostro), bg= color_boton).pack(pady=15)
-        self.etiqueta_mensaje = Label(self.root, text="", fg="red", bg= color_fondo)
+        Button(frame, text="Capturar Rostro", command=lambda: con_click(self.registrar_rostro), bg=color_boton,height=2, width=25).pack(pady=15)
+        self.etiqueta_mensaje = Label(frame, text="", fg="red", bg=color_fondo)
         self.etiqueta_mensaje.pack()
-        Button(self.root, text="Volver", command=con_click(self.root.destroy), bg=color_boton, font=("Arial", 12)).pack(pady=10)
+        Button(frame, text="Volver", command=inicio, bg=color_boton, height=2, width=25).pack(pady=10)
 
     def registrar_rostro(self):
         nombre_usuario = self.nombre_usuario.get()
@@ -146,25 +179,42 @@ class RegistroFacial:
 
     def mostrar_mensaje(self, texto, color_texto):
         self.etiqueta_mensaje.config(text=texto, fg=color_texto)
+"""
+InicioSesionFacial
 
+root
+
+configurar_ui()
+autenticar()
+mostrar_mensaje(self, texto, color_texto)
+"""
 class InicioSesionFacial:
     def __init__(self, root):
         self.root = root
         root.title("Login Facial")
         root.geometry(tamaño_pantallas)
         root.configure(bg=color_fondo)
+        root.attributes('-fullscreen', True)
         self.nombre_usuario = StringVar()
         self.configurar_ui()
 
     def configurar_ui(self):
-        Label(self.root, text="Login Facial", font=("Arial", 14), bg= color_fondo).pack(pady=10)
-        Label(self.root, text="Ingrese su nombre de usuario:", bg= color_fondo).pack()
-        self.entrada_usuario = Entry(self.root, textvariable=self.nombre_usuario)
+        def inicio():
+            self.root.destroy()
+            con_click("juego")
+            app = AppAutenticacion()
+            app.ejecutar()
+
+        frame = Frame(self.root, bg=color_fondo)
+        frame.place(relx=0.5, rely=0.5, anchor="center")
+        Label(frame, text="Login Facial", font=("Arial", 14), bg= color_fondo).pack(pady=10)
+        Label(frame, text="Ingrese su nombre de usuario:", bg= color_fondo).pack()
+        self.entrada_usuario = Entry(frame, textvariable=self.nombre_usuario)
         self.entrada_usuario.pack(pady=5)
-        Button(self.root, text="Identificarse", command=con_click(self.autenticar), bg= color_boton).pack(pady=15)
-        self.etiqueta_mensaje = Label(self.root, text="", fg="red", bg= color_fondo)
+        Button(frame, text="Identificarse", command=con_click(self.autenticar), bg= color_boton,height=2, width=25).pack(pady=15)
+        self.etiqueta_mensaje = Label(frame, text="", fg="red", bg= color_fondo)
         self.etiqueta_mensaje.pack()
-        Button(self.root, text="Volver", command=con_click(self.root.destroy), bg=color_boton, font=("Arial", 12)).pack(pady=10)
+        Button(frame, text="Volver", command=inicio, bg=color_boton, height=2, width=25).pack(pady=10)
 
     def autenticar(self):
         global inicio_sesion_exitoso, usuario_logueado
@@ -200,39 +250,48 @@ class InicioSesionFacial:
             inicio_sesion_exitoso = True
             usuario_logueado = nombre_usuario
             self.root.destroy()
+            
+            mostrar_pantalla_intermedia()
         else:
             self.mostrar_mensaje("Autenticación fallida", "red")
             self.entrada_usuario.delete(0, END)
 
     def mostrar_mensaje(self, texto, color_texto):
         self.etiqueta_mensaje.config(text=texto, fg=color_texto)
+"""
+AppAutenticacion
 
+abrir_registro()
+abrir_inicio_sesion()
+ejecutar()
+"""
 class AppAutenticacion:
     def __init__(self):
         self.ventana_principal = Tk()
         self.ventana_principal.title("Sistema de Autenticación Facial")
-        self.ventana_principal.geometry("400x300")
+        self.ventana_principal.geometry(tamaño_pantallas)
+        self.ventana_principal.attributes('-fullscreen', True)
         self.configurar_ui()
 
     def configurar_ui(self):
         self.ventana_principal.config(bg= color_fondo)
         self.ventana_principal.geometry(tamaño_pantallas)
-        Label(self.ventana_principal, text="Autenticación Facial", font=("Arial", 16), bg= color_fondo).pack(pady=30)
-        Button(self.ventana_principal, text="Registrarse", height=2, width=20,command=con_click(self.abrir_registro), bg= color_boton).pack(pady=10)
-        Button(self.ventana_principal, text="Iniciar Sesión", height=2, width=20,command=con_click(self.abrir_inicio_sesion), bg= color_boton).pack(pady=10)
-        Button(self.ventana_principal, text="Volver", command=con_click(self.ventana_principal.destroy), bg=color_boton, font=("Arial", 12)).pack(pady=10)
+        frame = Frame(self.ventana_principal, bg=color_fondo)
+        frame.place(relx=0.5, rely=0.5, anchor="center")
+        Label(frame, text="Autenticación Facial", font=("Arial", 16), bg= color_fondo).pack(pady=30)
+        Button(frame, text="Registrarse", height=2, width=25,command=con_click(self.abrir_registro), bg= color_boton).pack(pady=10)
+        Button(frame, text="Iniciar Sesión", height=2, width=25,command=con_click(self.abrir_inicio_sesion), bg= color_boton).pack(pady=10)
+        Button(frame, text="Cerrar",height=2, width=25, command=con_click(self.ventana_principal.destroy), bg=color_boton).pack(pady=10)
 
     def abrir_registro(self):
-        ventana_registro = Toplevel(self.ventana_principal)
+        self.ventana_principal.destroy()
+        ventana_registro = Tk()
         RegistroFacial(ventana_registro)
 
     def abrir_inicio_sesion(self):
-        ventana_login = Toplevel(self.ventana_principal)
+        self.ventana_principal.destroy()
+        ventana_login = Tk()
         InicioSesionFacial(ventana_login)
-        self.ventana_principal.wait_window(ventana_login)
-        if inicio_sesion_exitoso:
-            self.ventana_principal.destroy()
-            mostrar_pantalla_intermedia()
 
     def ejecutar(self):
         self.ventana_principal.mainloop()
@@ -241,39 +300,46 @@ class AppAutenticacion:
 Configuraciones generales
 """
 def mostrar_pantalla_intermedia():
-    root_intermedia = Tk()
-    root_intermedia.title("Acceso Concedido")
-    root_intermedia.geometry(tamaño_pantallas)
-    root_intermedia.configure(bg=color_fondo)
+    root = Tk()
+    root.title("Acceso Concedido")
+    root.geometry(tamaño_pantallas)
+    root.attributes('-fullscreen', True)
+    root.configure(bg=color_fondo)
 
     if musica_general:
         musica_lob()
 
     def iniciar_juego_memoria():
-        root_intermedia.destroy()
+        root.destroy()
         IniciadorCartas.ejecutar_juego(usuario_logueado)
 
     def iniciar_juego_de_patrones():
-        root_intermedia.destroy()
+        root.destroy()
         JuegoPatrones.ejecutar(on_game_end=lambda score: guardar_en_txt(usuario_logueado, score))
 
     def abrir_ventana_premios():
         gestor_premios = GestorPremios()
-        ventana_premios = Toplevel(root_intermedia)
-        VentanaPremios(ventana_premios, gestor_premios)
+        VentanaPremios(root, gestor_premios)
     
     def abrir_ventana_sonidos():
-        ventana_sonidos = Toplevel()
-        ConfiguracionPantalla(ventana_sonidos)
+        ConfiguracionPantalla(root)
 
+    frame = Frame(root, bg=color_fondo)
+    frame.place(relx=0.5, rely=0.5, anchor="center")
 
-    Label(root_intermedia, text="¡Login Exitoso!", font=("Arial", 18, "bold"), bg=color_fondo).pack(pady=30)
-    Button(root_intermedia, text="Continuar al Juego de Memoria", command=con_click(iniciar_juego_memoria), height=2, width=25, font=("Arial", 12), bg= color_boton).pack(pady=20)
-    Button(root_intermedia, text="Continuar al Juego de Patrones", command=con_click(iniciar_juego_de_patrones), height=2, width=25, font=("Arial", 12), bg= color_boton).pack(pady=20)
-    Button(root_intermedia, text="Continuar a la tienda", command=con_click(abrir_ventana_premios), height=2, width=25, font=("Arial", 12), bg= color_boton).pack(pady=20)
-    Button(root_intermedia, text="configurar sonidos", command=con_click(abrir_ventana_sonidos), height=2, width=25, font=("Arial", 12), bg= color_boton).pack(pady=20)
-    Button(root_intermedia, text="Volver", command=con_click(root_intermedia.destroy), bg=color_boton, font=("Arial", 12)).pack(pady=10)
-    root_intermedia.mainloop()
+    Label(frame, text="¡Login Exitoso!", font=("Arial", 18, "bold"), bg=color_fondo).pack(pady=30)
+    Button(frame, text="Continuar al Juego de Memoria", command=con_click(iniciar_juego_memoria), height=2, width=25, bg= color_boton).pack(pady=20)
+    Button(frame, text="Continuar al Juego de Patrones", command=con_click(iniciar_juego_de_patrones),height=2, width=25, bg= color_boton).pack(pady=20)
+    Button(frame, text="Continuar a la tienda", command=con_click(abrir_ventana_premios), height=2, width=25, bg= color_boton).pack(pady=20)
+    Button(frame, text="configurar sonidos", command=con_click(abrir_ventana_sonidos), height=2, width=25, bg= color_boton).pack(pady=20)
+    Button(frame, text="Cerrar", command=con_click(root.destroy), bg=color_boton,height=2, width=25).pack(pady=10)
+    root.mainloop()
+
+"""
+IniciadorCartas
+
+ejecutar_juego(usuario_logueado)
+"""
 
 class IniciadorCartas:
     @staticmethod
@@ -300,15 +366,7 @@ def obtener_cambio():
     token = "AARANAMO0I"  
     correo = "joseandreschava09@gmail.com"  
     fecha_actual = datetime.now().strftime("%d/%m/%Y")
-    params = {
-        "Token": token,
-        "Indicador": "317",  
-        "Nombre": "Tipo de cambio de compra",  
-        "SubNiveles": "N",
-        "CorreoElectronico": correo,
-        "FechaInicio": fecha_actual,
-        "FechaFinal": fecha_actual
-    }
+    params = {"Token": token,"Indicador": "317",  "Nombre": "Tipo de cambio de compra", "SubNiveles": "N","CorreoElectronico": correo,"FechaInicio": fecha_actual,"FechaFinal": fecha_actual}
     response = requests.post(url, data=params, timeout=10)
     response.raise_for_status() 
     root = ET.fromstring(response.text)
@@ -316,7 +374,6 @@ def obtener_cambio():
     tipo_cambio_compra = float(valor_element.text)
     print(f"cambio = {tipo_cambio_compra}")
     return tipo_cambio_compra 
-
 
 def guardar_en_txt(nombre, puntos):
     txt_path = 'C:\\Users\\Usuario\\Desktop\\proyecto 2\\Premios.txt'
@@ -348,86 +405,31 @@ def guardar_en_txt(nombre, puntos):
     with open(txt_path, 'w') as txt_file:
         for jugador in datos_existentes:
             txt_file.write(f"{jugador[0]},{jugador[1]}\n")
+"""
+VentanaPremios
 
-def Top():
-    global root
-    if root:
-        root.destroy()
-    root = Tk()
-    root.title("Top Jugadores")
-    root.configure(bg=color_fondo)
-    root.geometry(tamaño_pantallas)
-
-    main_frame = Frame(root, bg=color_fondo)
-    main_frame.pack(fill="both", expand=True, padx=20, pady=20)
-
-    Label(main_frame, text="TOP JUGADORES", font=("Arial", 24, "bold"), bg=color_fondo, fg="#333333").pack(pady=5)
-
-    tables_frame = Frame(main_frame, bg=color_fondo)
-    tables_frame.pack(fill="both", expand=True)
-
-    style = ttk.Style()
-    style.configure("Treeview", font=("Arial", 12), rowheight=25)
-    style.configure("Treeview.Heading", font=("Arial", 14, "bold"))
-
-    columns = ("posicion", "nombre", "kills")
-
-    def crear_tabla(parent, title, filepath, height=8):
-        frame = Frame(parent, bg=color_fondo)
-        frame.pack(fill="both", expand=True, pady=(0, 20))
-        Label(frame, text=title, font=("Arial", 16, "bold"), bg=color_fondo, fg="#333333").pack(pady=(0, 10))
-        tree = ttk.Treeview(frame, columns=columns, show="headings", height=height)
-        tree.pack(fill="both", expand=True, padx=10)
-
-        tree.heading("posicion", text="POSICIÓN")
-        tree.heading("nombre", text="NOMBRE")
-        tree.heading("kills", text="PUNTUACIÓN")
-
-        tree.column("posicion", width=100, anchor="center")
-        tree.column("nombre", width=400, anchor="center")
-        tree.column("kills", width=150, anchor="center")
-        return tree
-
-    def insertar_datos_top(tree, filepath):
-        if not os.path.exists(filepath):
-            tree.insert("", "end", values=("", "No hay datos", ""))
-            return
-
-        try:
-            with open(filepath, 'r') as file:
-                datos = []
-                for linea in file:
-                    if linea.strip():
-                        try:
-                            nombre, kills_str = linea.strip().split(',')
-                            datos.append([nombre, int(kills_str)])
-                        except ValueError:
-                            continue 
-                
-                datos_ordenados = sorted(datos, key=lambda x: x[1], reverse=True)[:5]
-                for i, (nombre, kills) in enumerate(datos_ordenados):
-                    tree.insert("", "end", values=(i + 1, nombre, kills))
-        except Exception:
-            tree.insert("", "end", values=("", "Error al leer", ""))
-
-    tree1 = crear_tabla(tables_frame, "Puntuaciones del Juego de Patrones", r"C:\Users\Usuario\Desktop\proyecto 2\Premios.txt")
-    insertar_datos_top(tree1, r"C:\Users\Usuario\Desktop\proyecto 2\Premios.txt")
-
-    root.mainloop()
-
+root
+gestor_premios
+configurar_ui()
+"""
 class VentanaPremios:
     def __init__(self, root, gestor_premios):
         self.root = root
+        self.root.destroy()
+        self.root = Tk()
         self.gestor_premios = gestor_premios
         self.root.title("Tienda de Premios")
         self.root.geometry(tamaño_pantallas)
+        self.root.attributes('-fullscreen', True)
         self.root.configure(bg=color_fondo)
         self.configurar_ui()
 
     def configurar_ui(self):
-        Label(self.root, text="Tienda de Premios", font=("Arial", 16, "bold"), bg=color_fondo).pack(pady=20)
+        frame = Frame(self.root, bg=color_fondo)
+        frame.place(relx=0.5, rely=0.5, anchor="center")
+        Label(frame, text="Tienda de Premios", font=("Arial", 16, "bold"), bg=color_fondo).pack(pady=20)
 
-        top_players_frame = Frame(self.root, bg=color_fondo)
+        top_players_frame = Frame(frame, bg=color_fondo)
         top_players_frame.pack(pady=10)
 
         Label(top_players_frame, text="Top Jugadores (Puntuaciones más altas):", font=("Arial", 12, "bold"), bg=color_fondo).pack()
@@ -435,8 +437,24 @@ class VentanaPremios:
         for i, (nombre, kills) in enumerate(self.gestor_premios.obtener_top_jugadores()):
             Label(top_players_frame, text=f"{i+1}. {nombre}: {kills}", font=("Arial", 10), bg=color_fondo).pack()
 
-        Button(self.root, text="Volver", command=con_click(self.root.destroy), bg=color_boton, font=("Arial", 12)).pack(pady=10)
+        Button(
+            frame, 
+            text="Volver", 
+            bg=color_boton, 
+            font=("Arial", 12), 
+            command=lambda: [con_click("juego"), self.root.destroy(), ventana_anterior("juego")]
+        ).pack(pady=10)
 
+"""
+Gestor_premios
+
+archivo_premios
+premios
+
+cargar_premios()
+actualizar_premio(self, nombre, kills)
+obtener_top_jugadores(self, limit=5)
+"""
 class GestorPremios:
     def __init__(self):
         self.archivo_premios = 'C:\\Users\\Usuario\\Desktop\\proyecto 2\\Premios.txt'
@@ -471,7 +489,19 @@ class GestorPremios:
 Juego de parejas
 ============================================================================================================
 """
+"""
+Ficha
 
+ruta_imagen
+id
+visible
+emparejada
+ruta_imagen_oculta
+
+imagen_tk_visible(self)
+imagen_tk_oculta(self)
+cargar_imagenes(self, tamano=(80, 100))
+"""
 class Ficha:
     def __init__(self, ruta_imagen, id=None, visible=False, emparejada=False, ruta_imagen_oculta=None):
         self.id = id
@@ -481,7 +511,7 @@ class Ficha:
         self.emparejada = emparejada
         self._imagen_tk_visible = None
         self._imagen_tk_oculta = None
-        self._referencias = []  # Mantiene referencias a las imágenes
+        self._referencias = []  
 
     @property
     def imagen_tk_visible(self):
@@ -496,7 +526,6 @@ class Ficha:
         return self._imagen_tk_oculta
 
     def cargar_imagenes(self, tamano=(80, 100)):
-        # Cargar imagen frontal
         try:
             img = PIL.Image.open(self.ruta_imagen)
             img = img.resize(tamano, PIL.Image.LANCZOS)
@@ -508,7 +537,6 @@ class Ficha:
             self._imagen_tk_visible = ImageTk.PhotoImage(img)
             self._referencias.append(self._imagen_tk_visible)
 
-        # Cargar imagen oculta
         try:
             img = PIL.Image.open(self.ruta_imagen_oculta)
             img = img.resize(tamano, PIL.Image.LANCZOS)
@@ -519,7 +547,15 @@ class Ficha:
             img = PIL.Image.new('RGB', tamano, 'gray')
             self._imagen_tk_oculta = ImageTk.PhotoImage(img)
             self._referencias.append(self._imagen_tk_oculta)
+"""
+Tablero
 
+filas
+columnas
+matriz
+
+inicializar(self, fichas)
+"""
 class Tablero:
     def __init__(self, filas=6, columnas=6):
         self.filas = filas
@@ -534,7 +570,18 @@ class Tablero:
             for j in range(self.columnas):
                 self.matriz[i][j] = fichas_barajadas[indice]
                 indice += 1
+"""
+Jugador
 
+nombre
+puntos
+intentos
+tablero
+
+get_intentos()
+incrementar_intentos()
+incrementar_puntos()
+"""
 class Jugador:
     def __init__(self, nombre):
         self.nombre = nombre
@@ -550,7 +597,24 @@ class Jugador:
     
     def get_intentos(self):
         return self.intentos
+"""
+Juego_Memoria
 
+jugadores
+tiempo_turno
+tiempo_restante
+turno_actual
+fichas_base
+fichas_elegidas
+posiciones_elegidas
+
+agregar_jugador(self, nombre)
+cambiar_turno()
+verificar_emparejamiento()
+guardar_puntaje(self, nombre_jugador, intentos)
+agregar_jugador(self, nombre)
+iniciar_juego(self, rutas_imagenes)
+"""
 class Juego_Memoria:
     def __init__(self):
         self.jugadores = []
@@ -595,7 +659,26 @@ class Juego_Memoria:
                 writer.writerow([nombre_jugador, intentos, datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
         except Exception as e:
             print(f"Error al guardar el puntaje: {e}")
+"""
+IntrfazJuego
 
+juego
+usuario_logueado
+ventana_juego
+botones_cartas
+referencias_imagenes
+id_temporizador
+
+comprobar_victoria()
+mostrar_animacion_ganador(self, ganador, intentos_ganador)
+configurar_interfaz()
+mostrar_tablero(self, indice_jugador)
+tiempo_agotado()
+clic_ficha(self, fila, columna)
+iniciar()
+ocultar_fichas_no_emparejadas()
+iniciar_temporizador()
+"""
 class InterfazJuego:
     def __init__(self, juego, usuario_logueado):
         self.juego = juego
@@ -653,23 +736,25 @@ class InterfazJuego:
     def configurar_interfaz(self):
         self.ventana_juego.configure(bg=color_fondo)
         self.ventana_juego.minsize(width=800, height=600)
+        self.ventana_juego.attributes('-fullscreen', True)
         self.marco_principal = Frame(self.ventana_juego, bg=color_fondo)
         self.marco_principal.pack(expand=True)
+        Button(self.ventana_juego, text="Volver", command=lambda: [con_click("juego"), self.ventana_juego.destroy(), ventana_anterior("juego")], bg=color_boton, font=("Arial", 12)).pack(pady=5)
         self.marco_info = Frame(self.ventana_juego, bg=color_fondo, padx=10, pady=10)
         self.marco_info.pack(fill=X)
         self.etiqueta_jugador = Label(self.marco_info, text="", font=("Arial", 14), bg=color_fondo, fg="white")
         self.etiqueta_jugador.pack(side=LEFT)
         self.etiqueta_puntos_j1 = Label(self.marco_info, text="J1 Pares: 0", font=("Arial", 14), bg=color_fondo, fg="white")
-        self.etiqueta_puntos_j1.pack(side=LEFT, padx=10)
+        self.etiqueta_puntos_j1.pack(side=LEFT, padx=5)
         self.etiqueta_intentos_j1 = Label(self.marco_info, text="J1 Intentos: 0", font=("Arial", 14), bg=color_fondo, fg="white")
-        self.etiqueta_intentos_j1.pack(side=LEFT, padx=10)
-
+        self.etiqueta_intentos_j1.pack(side=LEFT, padx=5)
         self.etiqueta_puntos_j2 = Label(self.marco_info, text="J2 Pares: 0", font=("Arial", 14), bg=color_fondo, fg="white")
-        self.etiqueta_puntos_j2.pack(side=RIGHT, padx=10)
+        self.etiqueta_puntos_j2.pack(side=RIGHT, padx=5)
         self.etiqueta_intentos_j2 = Label(self.marco_info, text="J2 Intentos: 0", font=("Arial", 14), bg=color_fondo, fg="white")
-        self.etiqueta_intentos_j2.pack(side=RIGHT, padx=10)
+        self.etiqueta_intentos_j2.pack(side=RIGHT, padx=5)
         self.etiqueta_temporizador = Label(self.marco_info, text="Tiempo: 10s", font=("Arial", 14), bg=color_fondo, fg="white")
-        self.etiqueta_temporizador.pack(side=RIGHT, padx=20)
+        self.etiqueta_temporizador.pack(side=RIGHT, padx=5)
+
 
 
     def mostrar_tablero(self, indice_jugador):
@@ -727,6 +812,8 @@ class InterfazJuego:
         carta = jugador_actual.tablero.matriz[fila][columna]
         if carta.emparejada or carta.visible or len(self.juego.fichas_elegidas) >= 2:
             return
+        if efectos_de_sonido:
+            reproducir_sonido("carta")
         carta.visible = True
         self.botones_cartas[fila][columna].config(image=carta.imagen_tk_visible)
         self.juego.fichas_elegidas.append(carta)
@@ -780,19 +867,43 @@ class InterfazJuego:
 Juego de patrones
 =================================================================================================
 """
+"""
+JuegoPatrones
+
+juego
+usuario_logueado
+ventana_juego
+botones_cartas
+referencias_imagenes
+id_temporizador
+
+iniciar_juego()
+turno_usuario()
+generar_y_mostrar_patron()
+_cargar_imagenes_base()
+configurar_ui()
+finalizar_juego()
+reiniciar_cartas()
+ejecutar(on_game_end=None)
+mostrar_paso_patron(self, index)
+ocultar_carta_y_continuar(self, id_carta, siguiente_indice)
+actualizar_temporizador(self)
+verificar_tiempo_excedido(self)
+carta_clicada(self, id_carta)
+comprobar_patron(self)
+ejecutar(on_game_end=None)
+"""
 class JuegoPatrones:
     def __init__(self, root):
         self.root = root
         self.root.title("Juego de Patrones")
         self.root.geometry(tamaño_pantallas)
         self.root.configure(bg=color_fondo)
-        
-        # Configuración del juego
+        self.root.attributes('-fullscreen', True)
         self.filas_patron = 4
         self.columnas_patron = 4
         self.total_cartas_patron = self.filas_patron * self.columnas_patron
         
-        # Estado del juego
         self.patron = []
         self.secuencia_usuario = []
         self.nivel = 1
@@ -801,23 +912,18 @@ class JuegoPatrones:
         self.mostrando_patron = False
         self.puede_clicar = False
         
-        # Temporizador
         self.tiempo_ultimo_clic = 0
         self.tiempo_inicio_turno = 0
         self.tiempo_restante = 0
         
-        # Imágenes
-        self._imagen_referencias = []  # Mantiene todas las referencias de imágenes
+        self._imagen_referencias = []  
         self.ruta_base_imagenes = "imagenes"
         self.ruta_carta_oculta = os.path.join(self.ruta_base_imagenes, "dorso_carta.png")
         
-        # Cargar imágenes antes de crear la UI
         self._cargar_imagenes_base()
         self.configurar_ui()
 
     def _cargar_imagenes_base(self):
-        """Carga todas las imágenes necesarias al inicio"""
-        # Imagen oculta
         try:
             img = PIL.Image.open(self.ruta_carta_oculta)
             img = img.resize((80, 100), PIL.Image.LANCZOS)
@@ -829,9 +935,8 @@ class JuegoPatrones:
             self.imagen_carta_oculta = ImageTk.PhotoImage(img)
             self._imagen_referencias.append(self.imagen_carta_oculta)
         
-        # Imágenes frontales
         self.todas_imagenes_frontales = []
-        for i in range(18):  # Asumiendo 18 imágenes diferentes
+        for i in range(18): 
             ruta = os.path.join(self.ruta_base_imagenes, f"imagen_{i+1}.png")
             try:
                 img = PIL.Image.open(ruta)
@@ -872,7 +977,7 @@ class JuegoPatrones:
         self.boton_inicio.pack(pady=20)
         self.etiqueta_temporizador = Label(self.root, text="Tiempo: 12s", font=("Arial", 14), bg=color_fondo, fg="white")
         self.etiqueta_temporizador.pack(pady=10)
-        Button(self.root, text="Volver", command=self.root.destroy, bg=color_boton, font=("Arial", 12)).pack(pady=10)
+        Button(self.root, text="Volver", command=lambda: [con_click("juego"), self.root.destroy(), ventana_anterior("juego")], bg=color_boton, font=("Arial", 12)).pack(pady=10)
 
     def iniciar_juego(self):
         self.juego_activo = True
@@ -934,7 +1039,6 @@ class JuegoPatrones:
         if self.puede_clicar and len(self.secuencia_usuario) < len(self.patron):
             self.etiqueta_mensaje.config(text="¡Tiempo agotado! Juego terminado.", fg="red")
             self.finalizar_juego()
-
 
     def carta_clicada(self, id_carta):
         if not self.puede_clicar:
@@ -1019,7 +1123,10 @@ def con_click(func):
         global sonido_botones
         if sonido_botones:
             reproducir_sonido("click")
-        func()
+        if func == "juego":
+            pass
+        else:
+            func()
     return wrapper
 
 def reproducir_sonido(tipo):
@@ -1027,9 +1134,9 @@ def reproducir_sonido(tipo):
     ruta = ""
     volumen = 0.5
     if tipo == "click":  
-        ruta = r"C:\Users\Usuario\Desktop\proyecto\sonidos\mouse-click-331781.mp3"
+        ruta = r"C:\Users\Usuario\Desktop\proyecto 2\mouse-click-331781.mp3"
     if tipo == "carta":  
-        ruta = r"C:\Users\Usuario\Desktop\proyecto\sonidos\mouse-click-331781.mp3"
+        ruta = r"C:\Users\Usuario\Desktop\proyecto 2\flipcard.mp3"
     sound = py.mixer.Sound(ruta)
     channel = py.mixer.find_channel(force=True) 
     if channel:
@@ -1037,15 +1144,26 @@ def reproducir_sonido(tipo):
         channel.play(sound)
 
 def musica_lob():
-    py.mixer.music.load(r"C:\Users\Usuario\Desktop\proyecto\sonidos\musica_3.mp3")
+    py.mixer.music.load(r"C:\Users\Usuario\Desktop\proyecto 2\Balatro Soundtrack Music 3 OST.mp3")
     py.mixer.music.set_volume(0.4) 
     py.mixer.music.play(-1, 0.0)
 
+"""
+ConfiguracionPantalla
+
+root
+
+crear_interfaz()
+volver()
+"""
 class ConfiguracionPantalla:
     def __init__(self, root):
         self.root = root
+        self.root.destroy()
+        self.root = Tk()
         self.root.title("Configuración de Sonido")
         self.root.geometry(tamaño_pantallas)
+        self.root.attributes('-fullscreen', True)
         self.root.configure(bg=color_fondo)
         
         self.musica_general_check = BooleanVar(value=True)
@@ -1055,78 +1173,49 @@ class ConfiguracionPantalla:
         self.crear_interfaz()
     
     def crear_interfaz(self):
-        marco_principal = Frame(self.root, bg= color_fondo, padx=20, pady=20)
-        marco_principal.pack(expand=True, fill='both')
+        frame = Frame(self.root, bg=color_fondo)
+        frame.place(relx=0.5, rely=0.5, anchor="center")
         
-        titulo = Label(
-            marco_principal, 
-            text="Configuración de Sonido", 
-            font=('Arial', 16, 'bold'), 
-            bg=color_fondo,
-            fg='#333333'
-        )
+        titulo = Label(frame, text="Configuración de Sonido", font=('Arial', 16, 'bold'), bg=color_fondo,fg='#333333')
         titulo.pack(pady=(0, 20))
-        
-        chk_musica = ttk.Checkbutton(
-            marco_principal,
-            text="Música General",
-            variable=self.musica_general_check,
-            style='Custom.TCheckbutton'
-        )
+
+        chk_musica = Checkbutton(frame,text="Música General",variable=self.musica_general_check,bg= color_fondo)
         chk_musica.pack(pady=10, anchor='w')
         
-        chk_botones = ttk.Checkbutton(
-            marco_principal,
-            text="Sonido de Botones",
-            variable=self.sonido_botones_check,
-            style='Custom.TCheckbutton'
-        )
+        chk_botones = Checkbutton(frame,text="Sonido de Botones",variable=self.sonido_botones_check,bg= color_fondo)
         chk_botones.pack(pady=10, anchor='w')
         
-        chk_efectos = ttk.Checkbutton(
-            marco_principal,
-            text="Efectos de Sonido",
-            variable=self.efectos_sonido_check,
-            style='Custom.TCheckbutton'
-        )
+        chk_efectos = Checkbutton(frame,text="Efectos de Sonido",variable=self.efectos_sonido_check,bg=color_fondo)
         chk_efectos.pack(pady=10, anchor='w')
         
-        btn_volver = Button(
-            marco_principal,
-            text="Volver",
-            command=con_click(self.volver),
-            bg=color_boton,
-            fg='white',
-            font=('Arial', 12),
-            padx=20,
-            pady=5,
-            relief='flat',
-            bd=0
-        )
+        btn_volver = Button(frame,text="Volver",command=con_click(self.volver),bg=color_boton,fg='black',font=('Arial', 12),padx=20,pady=5, relief='flat',bd=0)
         btn_volver.pack(pady=(30, 10), ipadx=10)
         
         estilo = ttk.Style()
-        estilo.configure(
-            'Custom.TCheckbutton',
-            background='#f0f0f0',
-            font=('Arial', 12),
-            foreground='#333333'
-        )
+        estilo.configure('Custom.TCheckbutton',background='#f0f0f0',font=('Arial', 12),foreground="#000000")
     
     def volver(self):
         global musica_general, sonido_botones, efectos_de_sonido
-        print("Configuraciones guardadas:")
-        print(f"Música General: {self.musica_general_check.get()}")
-        print(f"Sonido Botones: {self.sonido_botones_check.get()}")
-        print(f"Efectos Sonido: {self.efectos_sonido_check.get()}")
 
         if not self.musica_general_check.get():
             musica_general=False
+            py.mixer.music.stop()
         if not self.sonido_botones_check.get():
             sonido_botones = False
         if not self.efectos_sonido_check.get():
             efectos_de_sonido = False
+        if self.musica_general_check.get():
+            musica_general=True
+        if self.sonido_botones_check.get():
+            sonido_botones = True
+        if self.efectos_sonido_check.get():
+            efectos_de_sonido = True
         self.root.destroy()
+        ventana_anterior("musica")
+        
+def ventana_anterior(ventana_actual):
+    if ventana_actual == "musica" or ventana_actual == "juego" or ventana_actual=="premios":
+        mostrar_pantalla_intermedia()
 
 """
 =======================================================================
