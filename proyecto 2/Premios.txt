@@ -1,0 +1,5 @@
+Arias,1610
+UsuarioPrueba1,150
+UsuarioPrueba2,120
+UsuarioPrueba3,100
+UsuarioPrueba4,80
